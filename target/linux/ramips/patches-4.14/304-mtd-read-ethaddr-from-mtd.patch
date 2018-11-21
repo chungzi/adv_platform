@@ -1,0 +1,70 @@
+Index: linux-4.14.81/drivers/of/of_net.c
+===================================================================
+--- linux-4.14.81.orig/drivers/of/of_net.c	2018-11-20 18:05:31.165447872 +0800
++++ linux-4.14.81/drivers/of/of_net.c	2018-11-20 18:08:13.185447853 +0800
+@@ -83,24 +83,49 @@
+ 	if (IS_ERR(mtd))
+ 		return NULL;
+ 
+-	ret = mtd_read(mtd, be32_to_cpup(list), 6, &retlen, mac);
+-	put_mtd_device(mtd);
++	if (!strcmp(part, "Adv_Factory")) {
++		u8 *tmpeeprom = NULL, patten[4] = {0x30, 0x42, 0x00, 0x80};
++		int real_offset = 0, length;
++	
++		tmpeeprom = kzalloc(1024, GFP_KERNEL);
++		ret = mtd_read(mtd, be32_to_cpup(list), 512, &retlen, tmpeeprom);
++
++		do {
++			if (!memcmp(&tmpeeprom[real_offset], &patten, 4)) {
++				real_offset = be32_to_cpup(list) + real_offset + 6;
++				break;
++			}
++
++			memcpy(&length, &tmpeeprom[real_offset+4], 2);
++			real_offset += 6 + length;
++		}
++		while (length != 0);
+ 
+-	if (of_property_read_u32(np, "mtd-mac-address-increment-byte", &inc_idx))
+-		inc_idx = 5;
+-	if (inc_idx > 5)
+-		return NULL;
+-
+-	if (!of_property_read_u32(np, "mtd-mac-address-increment", &mac_inc))
+-		mac[inc_idx] += mac_inc;
++		if (length)
++			mtd_read(mtd, real_offset, 6, &retlen, mac);		
+ 
+-	if (!is_valid_ether_addr(mac))
+-		return NULL;
+-
+-	addr = of_get_mac_addr(np, "mac-address");
+-	if (addr) {
+-		memcpy(addr, mac, ETH_ALEN);
+-		return addr;
++		kfree(tmpeeprom);
++	}
++	else {
++		ret = mtd_read(mtd, be32_to_cpup(list), 6, &retlen, mac);
++		put_mtd_device(mtd);
++
++		if (of_property_read_u32(np, "mtd-mac-address-increment-byte", &inc_idx))
++			inc_idx = 5;
++		if (inc_idx > 5)
++			return NULL;
++
++		if (!of_property_read_u32(np, "mtd-mac-address-increment", &mac_inc))
++			mac[inc_idx] += mac_inc;
++
++		if (!is_valid_ether_addr(mac))
++			return NULL;
++
++		addr = of_get_mac_addr(np, "mac-address");
++		if (addr) {
++			memcpy(addr, mac, ETH_ALEN);
++			return addr;
++		}
+ 	}
+ 
+ 	prop = kzalloc(sizeof(*prop), GFP_KERNEL);
