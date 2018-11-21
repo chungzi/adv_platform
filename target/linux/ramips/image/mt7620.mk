@@ -708,3 +708,13 @@ define Device/zte-q7
   DEVICE_TITLE := ZTE Q7
 endef
 TARGET_DEVICES += zte-q7
+
+define Device/adv-mt7620a
+  DTS := ADV-MT7620
+  IMAGE_SIZE := $(ralink_default_fw_size_16M)
+  DEVICE_TITLE := Advantech mt7620a platform
+  IMAGE/sysupgrade.bin := $$(IMAGE/sysupgrade.bin)
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-net-qmi-wwan kmod-usb-serial-option uqmi
+endef
+TARGET_DEVICES += adv-mt7620a
+

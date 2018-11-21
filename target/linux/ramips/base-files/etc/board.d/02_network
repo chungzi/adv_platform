@@ -30,6 +30,7 @@ ramips_setup_interfaces()
 {
 	local board="$1"
 
+
 	case $board in
 	11acnas|\
 	w2914nsv2|\
@@ -404,6 +405,10 @@ ramips_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"0:lan:2" "1:lan:1" "4:wan" "6@eth0"
 		;;
+	adv-mt7620a)
+		ucidef_add_switch "switch0" \
+			"0:lan" "1:lan" "2:lan" "3:lan" "5:lan" "6@eth0"
+		;;
 	*)
 		RT3X5X=`cat /proc/cpuinfo | egrep "(RT3.5|RT5350)"`
 		if [ -n "${RT3X5X}" ]; then
@@ -594,6 +599,9 @@ ramips_setup_macs()
 		;;
 	wlr-6000)
 		wan_mac=$(macaddr_add "$(mtd_get_mac_binary factory 32772)" 2)
+		;;
+	adv-mt7620a)
+		lan_mac=$(mtd_get_mac_binary Factory 127)
 		;;
 	*)
 		lan_mac=$(cat /sys/class/net/eth0/address)

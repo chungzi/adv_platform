@@ -7,9 +7,11 @@ See: http://projectable.me/optimize-my-pi-wi-fi/
 Signed-off-by: Phil Elwell <phil@raspberrypi.org>
 ---
 
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c
-@@ -70,7 +70,11 @@ static int brcmf_fcmode;
+Index: backports-4.19-rc5-1/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c
+===================================================================
+--- backports-4.19-rc5-1.orig/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c	2018-11-20 15:37:36.537448931 +0800
++++ backports-4.19-rc5-1/drivers/net/wireless/broadcom/brcm80211/brcmfmac/common.c	2018-11-20 15:37:36.537448931 +0800
+@@ -70,7 +70,11 @@
  module_param_named(fcmode, brcmf_fcmode, int, 0);
  MODULE_PARM_DESC(fcmode, "Mode of firmware signalled flow control");
  

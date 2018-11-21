@@ -1,5 +1,7 @@
---- a/arch/mips/pci/pci-mt7620.c
-+++ b/arch/mips/pci/pci-mt7620.c
+Index: linux-4.14.81/arch/mips/pci/pci-mt7620.c
+===================================================================
+--- linux-4.14.81.orig/arch/mips/pci/pci-mt7620.c	2018-11-20 18:09:17.609447845 +0800
++++ linux-4.14.81/arch/mips/pci/pci-mt7620.c	2018-11-20 18:09:17.609447845 +0800
 @@ -35,6 +35,7 @@
  #define PPLL_CFG1			0x9c
  
@@ -8,7 +10,7 @@
  #define PDRV_SW_SET			(1<<31)
  #define LC_CKDRVPD			(1<<19)
  #define LC_CKDRVOHZ			(1<<18)
-@@ -242,8 +243,8 @@ static int mt7620_pci_hw_init(struct pla
+@@ -242,8 +243,8 @@
  	rt_sysc_m32(0, RALINK_PCIE0_CLK_EN, RALINK_CLKCFG1);
  	mdelay(100);
  
