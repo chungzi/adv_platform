@@ -1,0 +1,167 @@
+/dts-v1/;
+
+#include "adv_mt7620a.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+/ {
+	compatible = "adv,adv-mt7620a", "ralink,mt7620n-soc";
+	model = "Advantech mt7620a platform";
+
+	gpio-keys-polled {
+		compatible = "gpio-keys-polled";
+		poll-interval = <20>;
+
+		wps {
+			label = "wps";
+			gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_WPS_BUTTON>;
+		};
+
+		reset {
+			label = "reset";
+			gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+		};
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		status {
+			label = "status";
+			gpios = <&gpio1 5 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+			linux,default-trigger = "default-on";
+		};
+
+		reserved {
+			label = "reserved";
+			gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			linux,default-trigger = "none";
+		};
+
+		signal_b {
+			label = "lte_signal_b";
+			gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			linux,default-trigger = "none";
+		};
+
+		signal_r {
+			label = "lte_signal_r";
+			gpios = <&gpio1 2 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			linux,default-trigger = "none";
+		};
+
+		wifi_r {
+			label = "wifi_signal_r";
+			gpios = <&gpio1 1 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+			linux,default-trigger = "default-on";
+		};
+
+		wifi_b {
+			label = "wifi_signal_b";
+			gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+			linux,default-trigger = "default-on";
+		};
+	};
+
+	gpio_export {
+		compatible = "gpio-export";
+		#size-cells = <0>;
+
+		lte_modem_enable {
+			gpio-export,name = "lte_modem_enable";
+			gpio-export,output = <1>;
+			gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	wmac@10180000 {
+		ralink,mtd-eeprom = <&factory 0x20>;
+	};
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&gpio2 {
+	status = "okay";
+};
+
+&gpio3 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+
+	m25p80@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "U-Boot";
+				reg = <0x0 0x20000>;
+			};
+
+			partition@20000 {
+				label = "UBootEnv";
+				reg = <0x20000 0x10000>;
+			};
+
+			partition@30000 {
+				label = "firmware";
+				reg = <0x30000 0x1400000>;
+			};
+
+			rootfs_data: partition@1430000 {
+				label = "rootfs_data";
+				reg = <0x1430000 0xBB0000>; 
+			};
+
+			factory: partition@1fe0000 {
+				label = "Adv_Factory";
+				reg = <0x1fe0000 0x20000>;
+			};
+		};
+	};
+};
+
+&ehci {
+	status = "okay";
+};
+
+&ohci {
+	status = "okay";
+};
+
+&ethernet {
+	mtd-mac-address = <&factory 0x20>;
+	mediatek,portmap = "wllll";
+	port@4 {
+		status = "okay";
+	};
+};
+
+&pinctrl {
+	state_default: pinctrl0 {
+		default {
+			ralink,group = "spi refclk", "i2c", "rgmii1", "rgmii2";
+			ralink,function = "gpio";
+		};
+	};
+};
