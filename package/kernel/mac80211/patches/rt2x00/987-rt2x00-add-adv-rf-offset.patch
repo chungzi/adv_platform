@@ -1,0 +1,73 @@
+Index: backports-4.19-rc5-1/drivers/net/wireless/ralink/rt2x00/rt2x00eeprom.c
+===================================================================
+--- backports-4.19-rc5-1.orig/drivers/net/wireless/ralink/rt2x00/rt2x00eeprom.c	2018-11-20 15:36:10.593448941 +0800
++++ backports-4.19-rc5-1/drivers/net/wireless/ralink/rt2x00/rt2x00eeprom.c	2018-11-20 15:37:06.157448935 +0800
+@@ -45,6 +45,7 @@
+ 	const char *part;
+ 	const __be32 *list;
+ 	phandle phandle;
++	u_char macaddr[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, zero_macaddr[6]= {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+ 
+ 	list = of_get_property(np, "ralink,mtd-eeprom", &size);
+ 	if (!list)
+@@ -71,6 +72,41 @@
+ 	if (size > sizeof(*list))
+ 		offset = be32_to_cpup(list);
+ 
++	if (!strcmp(part, "Adv_Factory")) {
++		u_char tmpeeprom[1024], rf_patten[4] = {0x00, 0xF5, 0x00, 0x80}, mac_patten[4] = {0x30, 0x42, 0x00, 0x80};
++		int real_offset = 0, rf_offset = 0, length;
++
++		memset(tmpeeprom, 0, sizeof(tmpeeprom));
++		mtd_read(mtd, offset, len, &retlen, tmpeeprom);
++
++		do {
++			if (!memcmp(&tmpeeprom[rf_offset], mac_patten, 4)) {
++				rf_offset += 6;
++				break;
++			}
++
++			memcpy(&length, &tmpeeprom[rf_offset+4], 2);
++			rf_offset += 6 + length;
++		}
++		while (length != 0);
++
++		if (length) {
++			memcpy(macaddr, &tmpeeprom[rf_offset], 6);
++		}
++
++		do {
++			if (!memcmp(&tmpeeprom[real_offset], rf_patten, 4)) {
++				offset = offset + real_offset + 6;
++				break;
++			}
++
++			memcpy(&length, &tmpeeprom[real_offset+4], 2);
++			real_offset += 6 + length;
++		}
++		while (length != 0);		
++		
++	}
++
+ 	ret = mtd_read(mtd, offset, len, &retlen, (u_char *) rt2x00dev->eeprom);
+ 	put_mtd_device(mtd);
+ 
+@@ -83,6 +119,18 @@
+ 		for (i = 0; i < len/sizeof(u16); i++)
+ 			rt2x00dev->eeprom[i] = swab16(rt2x00dev->eeprom[i]);
+ 
++	if (memcmp(macaddr, zero_macaddr, sizeof(macaddr)))	{
++		int count = 0;
++		
++		memcpy(&count, &macaddr[2], 4);
++		count = swab32(count);
++		count += 1;
++		count = swab32(count);
++		memcpy(&macaddr[2], &count, 4);
++		/* EEPROM_MAC_ADDR_0 = 2 */
++		memcpy((u_char *)&rt2x00dev->eeprom[2], macaddr, sizeof(macaddr));
++	}
++
+ 	rt2x00dev->eeprom_file = &mtd_fw;
+ 	mtd_fw.size = len;
+ 	mtd_fw.data = (const u8 *) rt2x00dev->eeprom;
