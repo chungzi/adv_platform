@@ -1,0 +1,59 @@
+Index: linux-4.14.81/drivers/mtd/devices/m25p80.c
+===================================================================
+--- linux-4.14.81.orig/drivers/mtd/devices/m25p80.c	2018-11-16 13:54:23.286956267 +0800
++++ linux-4.14.81/drivers/mtd/devices/m25p80.c	2018-11-16 13:55:33.586956259 +0800
+@@ -313,6 +313,24 @@
+ 	return mtd_device_unregister(&flash->spi_nor.mtd);
+ }
+ 
++static void m25p_shutdown(struct spi_device *spi)
++{
++	struct m25p     *flash = spi_get_drvdata(spi);
++
++	if ((&flash->spi_nor)->addr_width > 3) {
++		flash->command[0] = SPINOR_OP_EX4B;  // exit 4-byte address mode: 0xe9
++		spi_write(flash->spi, flash->command, 1);
++		flash->command[0] = 0x66;  // enable reset
++		spi_write(flash->spi, flash->command, 1);
++		flash->command[0] = 0x99;  // reset
++		spi_write(flash->spi, flash->command, 1);
++	}
++
++	/* Clean up MTD stuff. */
++	mtd_device_unregister(&flash->spi_nor.mtd);
++}
++
++
+ /*
+  * Do NOT add to this array without reading the following:
+  *
+@@ -387,6 +405,7 @@
+ 	.id_table	= m25p_ids,
+ 	.probe	= m25p_probe,
+ 	.remove	= m25p_remove,
++	.shutdown = m25p_shutdown,
+ 
+ 	/* REVISIT: many of these chips have deep power-down modes, which
+ 	 * should clearly be entered on suspend() to minimize power use.
+Index: linux-4.14.81/kernel/panic.c
+===================================================================
+--- linux-4.14.81.orig/kernel/panic.c	2018-11-16 13:54:23.286956267 +0800
++++ linux-4.14.81/kernel/panic.c	2018-11-16 13:54:23.282956267 +0800
+@@ -27,6 +27,7 @@
+ #include <linux/console.h>
+ #include <linux/bug.h>
+ #include <linux/ratelimit.h>
++#include <linux/device.h>
+ 
+ #define PANIC_TIMER_STEP 100
+ #define PANIC_BLINK_SPD 18
+@@ -138,6 +139,9 @@
+ 	int old_cpu, this_cpu;
+ 	bool _crash_kexec_post_notifiers = crash_kexec_post_notifiers;
+ 
++	/* Avoid MTK7260 system hang up when 32MB SPI flash don't change 3B address mode */
++	device_shutdown();
++
+ 	/*
+ 	 * Disable local interrupts. This will prevent panic_smp_self_stop
+ 	 * from deadlocking the first cpu that invokes the panic, since
