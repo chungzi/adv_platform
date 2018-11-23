@@ -1,0 +1,21 @@
+Index: linux-4.14.81/drivers/usb/serial/option.c
+===================================================================
+--- linux-4.14.81.orig/drivers/usb/serial/option.c	2018-11-23 15:46:23.695693938 +0800
++++ linux-4.14.81/drivers/usb/serial/option.c	2018-11-23 15:47:56.403693927 +0800
+@@ -310,6 +310,7 @@
+ #define ZTE_PRODUCT_ME3620_MBIM			0x0426
+ #define ZTE_PRODUCT_ME3620_X			0x1432
+ #define ZTE_PRODUCT_ME3620_L			0x1433
++#define ZTE_PRODUCT_ME3630			0x1476
+ #define ZTE_PRODUCT_AC2726			0xfff1
+ #define ZTE_PRODUCT_MG880			0xfffd
+ #define ZTE_PRODUCT_CDMA_TECH			0xfffe
+@@ -1739,6 +1740,8 @@
+ 	 .driver_info = RSVD(2) | RSVD(3) | RSVD(4) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_ME3620_X),
+ 	 .driver_info = RSVD(3) | RSVD(4) | RSVD(5) },
++	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_ME3630),
++	 .driver_info = RSVD(3) | RSVD(4) | RSVD(5) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_ZM8620_X),
+ 	 .driver_info = RSVD(3) | RSVD(4) | RSVD(5) },
+ 	{ USB_VENDOR_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff, 0x02, 0x01) },
