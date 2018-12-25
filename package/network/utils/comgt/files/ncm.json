@@ -74,5 +74,21 @@
 		"connect": "AT+CGACT=1,${profile}",
 		"finalize": "AT+CGDATA=\\\"M-MBIM\\\",${profile},1",
 		"disconnect": "AT+CGACT=0,${profile}"
-	}
+	},
+        "gosuncnwelink": {
+                "initialize": [
+                        "AT",
+                        "AT+CFUN=1",
+                        "AT+CGDCONT=1,\\\"${pdptype}\\\",\\\"${apn}\\\",,0,0"
+                ],
+                "modes": {
+                        "preferlte": "AT+ZSNT=0,0,3",
+                        "preferumts": "AT+ZSNT=0,0,2",
+                        "lte": "AT+ZSNT=6,0,0",
+                        "gsm": "AT+ZSNT=1,0,0",
+                        "auto": "AT+ZSNT=0,0,0"
+                },
+                "connect": "AT+ZECMCALL=1",
+                "disconnect": "AT+CGATT=0"
+        }
 }
